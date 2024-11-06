@@ -1,13 +1,14 @@
-import Image from 'next/image'
+'use server'
+
 import Background from '@components/Background'
 import Hero from '@components/Hero'
-import PlaceholdersAndVanishInputDemo from '@components/Placeholder'
+import MainSection from '@components/MainSection'
 
 const Home = () => (
   <div>
     <Background />
     <Hero />
-    <PlaceholdersAndVanishInputDemo />
+    <MainSection />
   </div>
 )
 
