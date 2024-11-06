@@ -65,3 +65,22 @@ export const fetchBookByID = async (bookID: number) => {
     throw new Error('Failed to fetch book from the database.')
   }
 }
+
+export const fetchAllBooks = async () => {
+  const db = await getDB()
+
+  try {
+    const booksList = await db
+      .select()
+      .from(books)
+      .prepare()
+      .all()
+
+    console.log('Fetched all books:', booksList)
+    return booksList
+  } catch (error) {
+    const fetchError = error as Error
+    console.error('Error fetching all books:', fetchError.message)
+    throw new Error('Failed to fetch books from the database.')
+  }
+}

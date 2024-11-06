@@ -1,9 +1,9 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import PlaceholdersAndVanishInput from '@components/ui/placeholder'
 import Image from 'next/image'
-import { insertBook, fetchBookByID } from '@actions/databaseActions'
+import { insertBook, fetchBookByID, fetchAllBooks } from '@actions/databaseActions'
 import { analyzeTextWithGroq } from '@actions/askGroq'
 import { fetchGutenbergContent, fetchGutenbergMetadata } from '../actions/fetchGutenberg'
 import TextViewer from './TextViewer'
@@ -26,9 +26,27 @@ const PlaceholdersAndVanishInputDemo = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [qaHistory, setQaHistory] = useState<{ question: string; answer: string }[]>([])
   const [questionInput, setQuestionInput] = useState<string>('')
-  const [isCooldown, setIsCooldown] = useState<boolean>(false) // Cooldown state
-  const [analyzeError, setAnalyzeError] = useState<string | null>(null) // Error state for analysis
-  const [countdown, setCountdown] = useState<number>(60) // Countdown state
+  const [isCooldown, setIsCooldown] = useState<boolean>(false)
+  const [analyzeError, setAnalyzeError] = useState<string | null>(null)
+  const [countdown, setCountdown] = useState<number>(60)
+  const [books, setBooks] = useState<{ id: number; title: string }[]>([])
+
+  useEffect(() => {
+    const fetchBooks = async () => {
+      try {
+        const existingBooks = await fetchAllBooks()
+        const formattedBooks = existingBooks.map((book) => ({
+          id: book.bookID,
+          title: book.title,
+        }))
+        setBooks(formattedBooks)
+      } catch (error) {
+        console.error('Error fetching books:', error)
+      }
+    }
+
+    fetchBooks()
+  }, [])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setBookID(e.target.value)
@@ -46,49 +64,43 @@ const PlaceholdersAndVanishInputDemo = () => {
     }
 
     try {
-      // First, check if the book exists in the database
-      try {
-        const bookFromDB = await fetchBookByID(parsedBookID)
-        if (bookFromDB) {
-        // If the book is found in the database, set the content and metadata
-          setContent(bookFromDB.content)
-          setMetadata({
-            title: bookFromDB.title,
-            author: bookFromDB.author,
-            publicationDate: bookFromDB.publicationDate,
-            language: bookFromDB.language,
-            coverImageURL: bookFromDB.coverImageURL || null,
-          })
-          setErrorMessage('Book already exists in the database.')
-        }
-      } catch (err) {
-        // If the book is not found in the database, fetch it from Project Gutenberg
-        const posts = await fetchGutenbergContent(parsedBookID)
-        const fetchedMetadata = await fetchGutenbergMetadata(parsedBookID)
-
-        // Save the fetched book to the database
-        await insertBook({
-          bookID: parsedBookID,
-          title: fetchedMetadata.title,
-          author: fetchedMetadata.author,
-          publicationDate: fetchedMetadata.publicationDate,
-          language: fetchedMetadata.language,
-          coverImageURL: fetchedMetadata.coverImage || null,
-          content: posts,
-        })
-
-        // Set the content and metadata after saving
-        setContent(posts)
+      const bookFromDB = await fetchBookByID(parsedBookID)
+      if (bookFromDB) {
+        setContent(bookFromDB.content)
         setMetadata({
-          title: fetchedMetadata.title,
-          author: fetchedMetadata.author,
-          publicationDate: fetchedMetadata.publicationDate,
-          language: fetchedMetadata.language,
-          coverImageURL: fetchedMetadata.coverImage || null,
+          title: bookFromDB.title,
+          author: bookFromDB.author,
+          publicationDate: bookFromDB.publicationDate,
+          language: bookFromDB.language,
+          coverImageURL: bookFromDB.coverImageURL || null,
         })
-
-        console.log('Fetched book from Project Gutenberg:', fetchedMetadata)
+        setErrorMessage('Book already exists in the database.')
+        return
       }
+
+      const posts = await fetchGutenbergContent(parsedBookID)
+      const fetchedMetadata = await fetchGutenbergMetadata(parsedBookID)
+
+      await insertBook({
+        bookID: parsedBookID,
+        title: fetchedMetadata.title,
+        author: fetchedMetadata.author,
+        publicationDate: fetchedMetadata.publicationDate,
+        language: fetchedMetadata.language,
+        coverImageURL: fetchedMetadata.coverImage || null,
+        content: posts,
+      })
+
+      setContent(posts)
+      setMetadata({
+        title: fetchedMetadata.title,
+        author: fetchedMetadata.author,
+        publicationDate: fetchedMetadata.publicationDate,
+        language: fetchedMetadata.language,
+        coverImageURL: fetchedMetadata.coverImage || null,
+      })
+
+      console.log('Fetched book from Project Gutenberg:', fetchedMetadata)
     } catch (error) {
       if (error instanceof Error && error.message.includes('Not Found')) {
         setErrorMessage('No valid book ID found for that number. Please try another ID.')
@@ -101,17 +113,16 @@ const PlaceholdersAndVanishInputDemo = () => {
   }
 
   const handleAnalyzeText = async (question: string) => {
-    if (isCooldown) return // Prevent submission if in cooldown
+    if (isCooldown) return
 
     let answer: string
     try {
       answer = await analyzeTextWithGroq(question, chunkContent || '') || ''
       setQaHistory((prev) => [...prev, { question, answer: answer || 'No answer available' }])
-      setIsCooldown(true) // Start cooldown after a successful submission
-      setAnalyzeError(null) // Reset any previous error message
-      setCountdown(60) // Reset countdown to 60 seconds
+      setIsCooldown(true)
+      setAnalyzeError(null)
+      setCountdown(60)
 
-      // Set a timer to reset the cooldown after 60 seconds
       const timer = setInterval(() => {
         setCountdown((prev) => {
           if (prev <= 1) {
@@ -125,7 +136,26 @@ const PlaceholdersAndVanishInputDemo = () => {
     } catch (error) {
       const groqError = error as Error
       console.error('Error calling Groq API:', groqError.message)
-      setAnalyzeError('An error occurred while analyzing the text. Please try again later.') // Set error message
+      setAnalyzeError('An error occurred while analyzing the text. Please try again later.')
+    }
+  }
+
+  const handleBookClick = async (buttonBookID: number) => {
+    try {
+      const bookFromDB = await fetchBookByID(buttonBookID)
+      if (bookFromDB) {
+        setContent(bookFromDB.content)
+        setMetadata({
+          title: bookFromDB.title,
+          author: bookFromDB.author,
+          publicationDate: bookFromDB.publicationDate,
+          language: bookFromDB.language,
+          coverImageURL: bookFromDB.coverImageURL || null,
+        })
+      }
+    } catch (error) {
+      console.error('Error fetching book details:', error)
+      setErrorMessage('An error occurred while fetching the book details. Please try again later.')
     }
   }
 
@@ -179,6 +209,25 @@ const PlaceholdersAndVanishInputDemo = () => {
           />
         </div>
       )}
+      <div className="mt-10 w-full">
+        <h2 className="text-xl font-bold">Existing Books</h2>
+        <div className="grid grid-cols-2 gap-4 mt-4">
+          {books.map((book) => (
+            <button
+              type="button"
+              key={book.id}
+              className="border p-2 rounded-lg hover:bg-gray-200"
+              onClick={() => handleBookClick(book.id)}
+            >
+              <p className="font-semibold">
+                ID:
+                {book.id}
+              </p>
+              <p>{book.title}</p>
+            </button>
+          ))}
+        </div>
+      </div>
       {content && (
       <div>
         <div className="mt-10 w-full text-center">
@@ -190,7 +239,7 @@ const PlaceholdersAndVanishInputDemo = () => {
               e.preventDefault()
               handleAnalyzeText(questionInput)
             }}
-            disabled={!metadata || isCooldown} // Disable if in cooldown
+            disabled={!metadata || isCooldown}
           />
           {isCooldown && (
             <p className="text-red-500 mt-2">
@@ -201,7 +250,7 @@ const PlaceholdersAndVanishInputDemo = () => {
               seconds before asking another question.
             </p>
           )}
-          {analyzeError && ( // Display error message if there is an error
+          {analyzeError && (
             <p className="text-red-500 mt-2">{analyzeError}</p>
           )}
         </div>
