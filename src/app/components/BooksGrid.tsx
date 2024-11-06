@@ -18,11 +18,12 @@ const BooksGrid: React.FC<BooksGridProps> = ({ books, onBookClick }) => (
         <button
           type="button"
           key={book.id}
-          className="border p-2 rounded-lg hover:bg-gray-200"
+          className="border p-2 rounded-lg hover:bg-gray-300 hover:text-black"
           onClick={() => onBookClick(book.id)}
         >
           <p className="font-semibold">
             ID:
+            {' '}
             {book.id}
           </p>
           <p>{book.title}</p>
