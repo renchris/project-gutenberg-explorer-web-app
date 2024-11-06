@@ -23,7 +23,6 @@ export const fetchGutenbergMetadata = async (bookID: number) => {
   const metadataHtml = await metadataResponse.text()
   const $ = cheerio.load(metadataHtml)
 
-  // Extract relevant metadata
   const title = $('h1[itemprop="name"]').text().trim()
   const author = $('a[itemprop="creator"]').text().trim()
   const publicationDate = $('tr:contains("Release Date") td[itemprop="datePublished"]').text().trim()

@@ -3,6 +3,7 @@
 import React, { useState } from 'react'
 import PlaceholdersAndVanishInput from '@components/ui/placeholder'
 import Image from 'next/image'
+import { insertBook, fetchBookByID } from '@actions/databaseActions'
 import { fetchGutenbergContent, fetchGutenbergMetadata } from '../actions/fetchGutenberg'
 import TextViewer from './TextViewer'
 
@@ -40,6 +41,19 @@ const PlaceholdersAndVanishInputDemo = () => {
     try {
       const posts = await fetchGutenbergContent(parsedBookID)
       const fetchedMetadata = await fetchGutenbergMetadata(parsedBookID)
+
+      await insertBook({
+        bookID: parsedBookID,
+        title: fetchedMetadata.title,
+        author: fetchedMetadata.author,
+        publicationDate: fetchedMetadata.publicationDate,
+        language: fetchedMetadata.language,
+        coverImageURL: fetchedMetadata.coverImage || null,
+        content: posts,
+      })
+
+      const bookFromDB = await fetchBookByID(parsedBookID)
+      console.log('Fetched book from DB:', bookFromDB)
 
       setContent(posts)
       setMetadata(fetchedMetadata)

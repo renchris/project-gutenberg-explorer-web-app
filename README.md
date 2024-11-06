@@ -29,6 +29,13 @@ First, install the dependencies:
 pnpm install
 ```
 
+Then, initialize the local database:
+
+```bash
+pnpm generate
+pnpm migrate
+```
+
 Then, run the application:
 
 ```bash

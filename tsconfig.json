@@ -22,6 +22,8 @@
     "baseUrl": ".",
     "paths": {
       "@lib/*": ["lib/*"],
+      "@drizzle/*": ["drizzle/*"],
+      "@actions/*": ["src/app/actions/*"],
       "@components/*": ["src/app/components/*"],
     }
   },
