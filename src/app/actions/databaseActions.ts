@@ -16,6 +16,16 @@ export const insertBook = async (bookData: {
   const db = await getDB()
 
   try {
+    const existingBook = await db
+      .select()
+      .from(books)
+      .where(eq(books.bookID, bookData.bookID))
+      .get()
+
+    if (existingBook) {
+      throw new Error(`Book with ID ${bookData.bookID} already exists.`)
+    }
+
     const insertedBook = await db
       .insert(books)
       .values(bookData)

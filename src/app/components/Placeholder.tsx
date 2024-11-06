@@ -39,28 +39,49 @@ const PlaceholdersAndVanishInputDemo = () => {
     }
 
     try {
-      const posts = await fetchGutenbergContent(parsedBookID)
-      const fetchedMetadata = await fetchGutenbergMetadata(parsedBookID)
+      // First, check if the book exists in the database
+      try {
+        const bookFromDB = await fetchBookByID(parsedBookID)
+        if (bookFromDB) {
+        // If the book is found in the database, set the content and metadata
+          setContent(bookFromDB.content)
+          setMetadata({
+            title: bookFromDB.title,
+            author: bookFromDB.author,
+            publicationDate: bookFromDB.publicationDate,
+            language: bookFromDB.language,
+            coverImageURL: bookFromDB.coverImageURL || null,
+          })
+          setErrorMessage('Book already exists in the database.')
+        }
+      } catch (err) {
+        // If the book is not found in the database, fetch it from Project Gutenberg
+        const posts = await fetchGutenbergContent(parsedBookID)
+        const fetchedMetadata = await fetchGutenbergMetadata(parsedBookID)
 
-      await insertBook({
-        bookID: parsedBookID,
-        title: fetchedMetadata.title,
-        author: fetchedMetadata.author,
-        publicationDate: fetchedMetadata.publicationDate,
-        language: fetchedMetadata.language,
-        coverImageURL: fetchedMetadata.coverImage || null,
-        content: posts,
-      })
+        // Save the fetched book to the database
+        await insertBook({
+          bookID: parsedBookID,
+          title: fetchedMetadata.title,
+          author: fetchedMetadata.author,
+          publicationDate: fetchedMetadata.publicationDate,
+          language: fetchedMetadata.language,
+          coverImageURL: fetchedMetadata.coverImage || null,
+          content: posts,
+        })
 
-      const bookFromDB = await fetchBookByID(parsedBookID)
-      console.log('Fetched book from DB:', bookFromDB)
+        // Set the content and metadata after saving
+        setContent(posts)
+        setMetadata({
+          title: fetchedMetadata.title,
+          author: fetchedMetadata.author,
+          publicationDate: fetchedMetadata.publicationDate,
+          language: fetchedMetadata.language,
+          coverImageURL: fetchedMetadata.coverImage || null,
+        })
 
-      setContent(posts)
-      setMetadata(fetchedMetadata)
-
-      console.log('submitted')
-      console.log('posts', posts)
-      console.log('metadata', fetchedMetadata)
+        console.log('Fetched book from Project Gutenberg:', fetchedMetadata)
+      }
     } catch (error) {
       if (error instanceof Error && error.message.includes('Not Found')) {
         setErrorMessage('No valid book ID found for that number. Please try another ID.')
