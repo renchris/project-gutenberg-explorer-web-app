@@ -4,5 +4,6 @@
         "turso",
         "tursodatabase",
         "libsql",
+        "groq",
     ]
 }

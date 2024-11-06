@@ -10,10 +10,12 @@ const PlaceholdersAndVanishInput = ({
   placeholders,
   onChange,
   onSubmit,
+  disabled,
 }: {
   placeholders: string[];
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
+  disabled: boolean;
 }) => {
   const [currentPlaceholder, setCurrentPlaceholder] = useState(0)
 
@@ -204,6 +206,7 @@ const PlaceholdersAndVanishInput = ({
           }
         }}
         onKeyDown={handleKeyDown}
+        disabled={disabled}
         ref={inputRef}
         value={value}
         type="text"
