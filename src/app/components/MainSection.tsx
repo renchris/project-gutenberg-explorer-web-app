@@ -75,7 +75,7 @@ const MainSection = () => {
           language: bookFromDB.language,
           coverImageURL: bookFromDB.coverImageURL || null,
         })
-        setErrorMessage('Book already exists in the database.')
+        setErrorMessage('Book already exists in and is retrieved from the database.')
         return
       }
 
@@ -103,10 +103,12 @@ const MainSection = () => {
 
       console.log('Fetched book from Project Gutenberg:', fetchedMetadata)
     } catch (error) {
-      if (error instanceof Error && error.message.includes('Not Found')) {
-        setErrorMessage('No valid book ID found for that number. Please try another ID.')
-      } else if (error instanceof Error) {
-        setErrorMessage(`An error occurred while fetching the content: ${error.message}`)
+      if (error instanceof Error) {
+        if (error.message.includes('Not Found')) {
+          setErrorMessage('No valid book ID found for that number. Please try another ID.')
+        } else {
+          setErrorMessage(`An error occurred while fetching the content: ${error.message}`)
+        }
       } else {
         setErrorMessage('An unknown error occurred while fetching the content')
       }

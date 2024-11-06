@@ -54,7 +54,7 @@ export const fetchBookByID = async (bookID: number) => {
       .get()
 
     if (!book) {
-      throw new Error('Book with this ID does not exist')
+      return book
     }
 
     console.log('Fetched book:', book)
