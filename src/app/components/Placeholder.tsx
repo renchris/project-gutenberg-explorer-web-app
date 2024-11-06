@@ -19,18 +19,27 @@ const PlaceholdersAndVanishInputDemo = () => {
     language: string;
     coverImage: string | undefined;
   } | null>(null)
+  const [bookID, setBookID] = useState<string>('')
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log(e.target.value)
+    setBookID(e.target.value)
+    setErrorMessage(null)
   }
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    const bookID = 74682
+
+    const parsedBookID = parseInt(bookID, 10)
+
+    if (Number.isNaN(parsedBookID) || parsedBookID <= 0) {
+      setErrorMessage('Invalid book ID. Please enter a valid number.')
+      return
+    }
 
     try {
-      const posts = await fetchGutenbergContent(bookID)
-      const fetchedMetadata = await fetchGutenbergMetadata(bookID)
+      const posts = await fetchGutenbergContent(parsedBookID)
+      const fetchedMetadata = await fetchGutenbergMetadata(parsedBookID)
 
       setContent(posts)
       setMetadata(fetchedMetadata)
@@ -39,7 +48,13 @@ const PlaceholdersAndVanishInputDemo = () => {
       console.log('posts', posts)
       console.log('metadata', fetchedMetadata)
     } catch (error) {
-      console.error(error)
+      if (error instanceof Error && error.message.includes('Not Found')) {
+        setErrorMessage('No valid book ID found for that number. Please try another ID.')
+      } else if (error instanceof Error) {
+        setErrorMessage(`An error occurred while fetching the content: ${error.message}`)
+      } else {
+        setErrorMessage('An unknown error occurred while fetching the content')
+      }
     }
   }
 
@@ -50,6 +65,9 @@ const PlaceholdersAndVanishInputDemo = () => {
         onChange={handleChange}
         onSubmit={onSubmit}
       />
+      {errorMessage && (
+        <p className="text-red-500 mt-2">{errorMessage}</p>
+      )}
       {metadata && (
         <div className="mt-4">
           <h2 className="text-lg font-bold">{metadata.title}</h2>
