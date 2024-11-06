@@ -28,7 +28,30 @@ const config: Config = {
         foreground: 'var(--foreground)',
       },
     },
+    animation: {
+      shimmer: 'shimmer 2s linear infinite',
+      spin: 'spin 2s linear infinite',
+    },
+    keyframes: {
+      shimmer: {
+        from: {
+          backgroundPosition: '0 0',
+        },
+        to: {
+          backgroundPosition: '-200% 0',
+        },
+      },
+      spin: {
+        from: {
+          transform: 'rotate(0deg)',
+        },
+        to: {
+          transform: 'rotate(360deg)',
+        },
+      },
+    },
   },
+
   plugins: [
     addVariablesForColors,
     function ({ matchUtilities, theme }: any) {
