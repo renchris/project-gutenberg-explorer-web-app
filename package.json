@@ -7,6 +7,7 @@
     "studio": "drizzle-kit studio",
     "generate": "drizzle-kit generate",
     "migrate": "drizzle-kit migrate",
+    "setup-env": "tsx ./pre-build/setup-env.ts",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
@@ -34,7 +35,8 @@
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "tailwind-merge": "^2.5.4",
-    "tailwindcss": "^3.4.14"
+    "tailwindcss": "^3.4.14",
+    "tsx": "^4.19.2"
   },
   "devDependencies": {
     "@types/node": "^22.8.7",
