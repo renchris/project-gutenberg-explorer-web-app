@@ -78,8 +78,13 @@ const MainSection = () => {
         setErrorMessage('Book already exists in and is retrieved from the database.')
         return
       }
-
-      const posts = await fetchGutenbergContent(parsedBookID)
+      let posts
+      try {
+        posts = await fetchGutenbergContent(parsedBookID)
+      } catch (error) {
+        setErrorMessage('No valid book ID found for that number. Please try another ID.')
+        return
+      }
       const fetchedMetadata = await fetchGutenbergMetadata(parsedBookID)
 
       await insertBook({
@@ -104,6 +109,9 @@ const MainSection = () => {
       console.log('Fetched book from Project Gutenberg:', fetchedMetadata)
     } catch (error) {
       if (error instanceof Error) {
+        console.log('--errorr')
+        console.log(error)
+        console.log('--')
         if (error.message.includes('Not Found')) {
           setErrorMessage('No valid book ID found for that number. Please try another ID.')
         } else {
