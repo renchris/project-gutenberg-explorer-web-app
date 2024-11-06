@@ -49,7 +49,7 @@ const AnalyzeTextPage: React.FC<AnalyzeTextPageProps> = ({
     </div>
     <div className="mt-6 w-full">
       {qaHistory.map((qa, index) => (
-        <div key={`${qa.question}-${qa.answer}`} className="border text-slate-50 p-4 my-2 rounded-lg shadow-md">
+        <div key={`${qa.question}-${qa.answer}`} className="border p-4 my-2 rounded-lg shadow-md">
           <p className="font-semibold">Question:</p>
           <p>{qa.question}</p>
           <p className="font-semibold mt-2">Answer:</p>

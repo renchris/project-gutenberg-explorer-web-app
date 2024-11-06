@@ -41,8 +41,8 @@ const Hero = () => {
             </div>
           </div>
           <div className="text-center">
-            <h1 className="text-white text-5xl font-semibold tracking-tight text-gray-900 sm:text-7xl">
-              Project Grutenberg Explorer
+            <h1 className=" text-5xl font-semibold tracking-tight sm:text-7xl">
+              Project Gutenberg Explorer
             </h1>
             <p className="mt-8 text-pretty text-lg font-medium text-gray-500 sm:text-xl/8">
               Search for Project Gutenberg book ID to fetch,
