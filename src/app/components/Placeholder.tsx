@@ -7,6 +7,7 @@ import { insertBook, fetchBookByID, fetchAllBooks } from '@actions/databaseActio
 import { analyzeTextWithGroq } from '@actions/askGroq'
 import { fetchGutenbergContent, fetchGutenbergMetadata } from '../actions/fetchGutenberg'
 import TextViewer from './TextViewer'
+import BooksGrid from './BooksGrid'
 
 const PlaceholdersAndVanishInputDemo = () => {
   const placeholders = [
@@ -200,8 +201,8 @@ const PlaceholdersAndVanishInputDemo = () => {
         </div>
       )}
       {content && (
-        <div className="mt-4 w-full">
-          <h3 className="text-md font-semibold">Content:</h3>
+        <div className="mt-8 w-full">
+          <h2 className="text-xl mb-2 font-bold">Book Content</h2>
           <TextViewer
             content={content}
             setChunkContent={setChunkContent}
@@ -209,63 +210,45 @@ const PlaceholdersAndVanishInputDemo = () => {
           />
         </div>
       )}
-      <div className="mt-10 w-full">
-        <h2 className="text-xl font-bold">Existing Books</h2>
-        <div className="grid grid-cols-2 gap-4 mt-4">
-          {books.map((book) => (
-            <button
-              type="button"
-              key={book.id}
-              className="border p-2 rounded-lg hover:bg-gray-200"
-              onClick={() => handleBookClick(book.id)}
-            >
-              <p className="font-semibold">
-                ID:
-                {book.id}
-              </p>
-              <p>{book.title}</p>
-            </button>
-          ))}
-        </div>
-      </div>
       {content && (
-      <div>
-        <div className="mt-10 w-full text-center">
-          <h2 className="text-xl font-bold">Analyze Text Page</h2>
-          <PlaceholdersAndVanishInput
-            placeholders={['Ask a question about the text...']}
-            onChange={(e) => setQuestionInput(e.target.value)}
-            onSubmit={(e) => {
-              e.preventDefault()
-              handleAnalyzeText(questionInput)
-            }}
-            disabled={!metadata || isCooldown}
-          />
-          {isCooldown && (
-            <p className="text-red-500 mt-2">
-              Please wait
-              {' '}
-              {countdown}
-              {' '}
-              seconds before asking another question.
-            </p>
-          )}
-          {analyzeError && (
-            <p className="text-red-500 mt-2">{analyzeError}</p>
-          )}
+        <div className="w-full">
+          <div className="mt-10 w-full text-center">
+            <h2 className="text-xl mb-4 font-bold">Analyze Text Page</h2>
+            <PlaceholdersAndVanishInput
+              placeholders={['Ask a question about the text...']}
+              onChange={(e) => setQuestionInput(e.target.value)}
+              onSubmit={(e) => {
+                e.preventDefault()
+                handleAnalyzeText(questionInput)
+              }}
+              disabled={!metadata || isCooldown}
+            />
+            {isCooldown && (
+              <p className="text-red-500 mt-2">
+                Please wait
+                {' '}
+                {countdown}
+                {' '}
+                seconds before asking another question.
+              </p>
+            )}
+            {analyzeError && (
+              <p className="text-red-500 mt-2">{analyzeError}</p>
+            )}
+          </div>
+          <div className="mt-6 w-full">
+            {qaHistory.map((qa, index) => (
+              <div key={`${qa.question}-${qa.answer}`} className="border p-4 my-2 rounded-lg shadow-md">
+                <p className="font-semibold">Question:</p>
+                <p>{qa.question}</p>
+                <p className="font-semibold mt-2">Answer:</p>
+                <p>{qa.answer}</p>
+              </div>
+            ))}
+          </div>
         </div>
-        <div className="mt-6 w-full">
-          {qaHistory.map((qa, index) => (
-            <div key={`${qa.question}-${qa.answer}`} className="border p-4 my-2 rounded-lg shadow-md">
-              <p className="font-semibold">Question:</p>
-              <p>{qa.question}</p>
-              <p className="font-semibold mt-2">Answer:</p>
-              <p>{qa.answer}</p>
-            </div>
-          ))}
-        </div>
-      </div>
       )}
+      <BooksGrid books={books} onBookClick={handleBookClick} />
     </div>
   )
 }
